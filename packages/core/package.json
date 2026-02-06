@@ -29,6 +29,10 @@
     "./session": {
       "import": "./dist/session/index.js",
       "types": "./dist/session/index.d.ts"
+    },
+    "./mkf": {
+      "import": "./dist/mkf/index.js",
+      "types": "./dist/mkf/index.d.ts"
     }
   },
   "scripts": {

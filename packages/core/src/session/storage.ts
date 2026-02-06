@@ -1,6 +1,6 @@
 import { readFile, writeFile, mkdir, readdir } from "node:fs/promises";
 import { join } from "node:path";
-import type { ReadingState, ChapterReflection, Book } from "../types.js";
+import type { ReadingState, ChapterReflection, Book, BookmarkSnapshot } from "../types.js";
 
 /**
  * Filesystem-based storage for reading sessions.
@@ -11,10 +11,17 @@ import type { ReadingState, ChapterReflection, Book } from "../types.js";
  *       ├── book.json          # Cached book metadata (no full content)
  *       ├── state.json         # Reading position + session data
  *       ├── summary.md         # Evolving running summary
- *       └── reflections/
- *           ├── chapter-01.md
- *           ├── chapter-02.md
- *           └── ...
+ *       ├── mkf.md             # Evolving MKF distillation
+ *       ├── chapters/          # Pre-extracted chapter text
+ *       │   ├── ch-00.md
+ *       │   └── ...
+ *       ├── reflections/       # Timestamped, immutable
+ *       │   ├── ch-02-20260206T172000.md
+ *       │   └── ...
+ *       ├── bookmarks/
+ *       │   ├── 20260206T172000.json
+ *       │   └── 20260206T183000-pause.json
+ *       └── pending-save.json  # Temp file for script save command
  */
 
 export class LocalStorage {
@@ -30,7 +37,12 @@ export class LocalStorage {
 
   /** Ensure the directory structure exists for a book */
   async init(bookId: string): Promise<void> {
-    await mkdir(join(this.bookDir(bookId), "reflections"), { recursive: true });
+    const dir = this.bookDir(bookId);
+    await Promise.all([
+      mkdir(join(dir, "reflections"), { recursive: true }),
+      mkdir(join(dir, "chapters"), { recursive: true }),
+      mkdir(join(dir, "bookmarks"), { recursive: true }),
+    ]);
   }
 
   /** Save book metadata (TOC, token counts — not full chapter text) */
@@ -144,6 +156,124 @@ export class LocalStorage {
       return true;
     } catch {
       return false;
+    }
+  }
+
+  // --- Chapter storage (pre-extracted by ingest) ---
+
+  /** Save a pre-extracted chapter as markdown */
+  async saveChapter(bookId: string, index: number, content: string): Promise<void> {
+    const filename = `ch-${String(index).padStart(2, "0")}.md`;
+    await writeFile(
+      join(this.bookDir(bookId), "chapters", filename),
+      content,
+      "utf-8",
+    );
+  }
+
+  /** Load a pre-extracted chapter */
+  async loadChapter(bookId: string, index: number): Promise<string | null> {
+    const filename = `ch-${String(index).padStart(2, "0")}.md`;
+    try {
+      return await readFile(
+        join(this.bookDir(bookId), "chapters", filename),
+        "utf-8",
+      );
+    } catch {
+      return null;
+    }
+  }
+
+  // --- MKF storage ---
+
+  /** Save the evolving MKF distillation */
+  async saveMkf(bookId: string, content: string): Promise<void> {
+    await writeFile(
+      join(this.bookDir(bookId), "mkf.md"),
+      content,
+      "utf-8",
+    );
+  }
+
+  /** Load the evolving MKF distillation */
+  async loadMkf(bookId: string): Promise<string> {
+    try {
+      return await readFile(
+        join(this.bookDir(bookId), "mkf.md"),
+        "utf-8",
+      );
+    } catch {
+      return "";
+    }
+  }
+
+  // --- Timestamped reflections ---
+
+  /** Save a timestamped reflection (immutable — never overwritten) */
+  async saveTimestampedReflection(
+    bookId: string,
+    chapterIndex: number,
+    content: string,
+  ): Promise<string> {
+    const ts = new Date().toISOString().replace(/[:.]/g, "").slice(0, 15);
+    const filename = `ch-${String(chapterIndex).padStart(2, "0")}-${ts}.md`;
+    await writeFile(
+      join(this.bookDir(bookId), "reflections", filename),
+      content,
+      "utf-8",
+    );
+    return filename;
+  }
+
+  // --- Bookmark storage ---
+
+  /** Save a bookmark snapshot */
+  async saveBookmark(
+    bookId: string,
+    snapshot: BookmarkSnapshot,
+  ): Promise<string> {
+    const suffix = snapshot.type === "pause" ? "-pause" : "";
+    const ts = new Date(snapshot.timestamp)
+      .toISOString()
+      .replace(/[:.]/g, "")
+      .slice(0, 15);
+    const filename = `${ts}${suffix}.json`;
+    await writeFile(
+      join(this.bookDir(bookId), "bookmarks", filename),
+      JSON.stringify(snapshot, null, 2),
+      "utf-8",
+    );
+    return filename;
+  }
+
+  /** Load a specific bookmark by filename */
+  async loadBookmark(
+    bookId: string,
+    filename: string,
+  ): Promise<BookmarkSnapshot | null> {
+    try {
+      const content = await readFile(
+        join(this.bookDir(bookId), "bookmarks", filename),
+        "utf-8",
+      );
+      return JSON.parse(content) as BookmarkSnapshot;
+    } catch {
+      return null;
+    }
+  }
+
+  /** List all bookmark filenames for a book, newest first */
+  async listBookmarks(bookId: string): Promise<string[]> {
+    try {
+      const entries = await readdir(
+        join(this.bookDir(bookId), "bookmarks"),
+      );
+      return entries
+        .filter((e) => e.endsWith(".json"))
+        .sort()
+        .reverse();
+    } catch {
+      return [];
     }
   }
 }

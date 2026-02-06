@@ -130,6 +130,25 @@ export interface ContextWindowConfig {
   maxReflectionTokens: number;
 }
 
+/** A bookmark snapshot for pause/resume */
+export interface Bookmark {
+  timestamp: string;
+  type: "auto" | "pause";
+  bookId: string;
+  chapterIndex: number;
+  chunkIndex: number;
+  sessionId: string;
+  mkfTokens: number;
+  summaryTokens: number;
+}
+
+/** A full bookmark with state, MKF, and summary for restoration */
+export interface BookmarkSnapshot extends Bookmark {
+  state: ReadingState;
+  mkf: string;
+  summary: string;
+}
+
 /** A composed context window ready to send to the model */
 export interface ReadingContext {
   /** Running summary (positioned at top for primacy effect) */

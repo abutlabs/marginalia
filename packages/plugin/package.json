@@ -1,0 +1,19 @@
+{
+  "name": "@marginalia/plugin",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "Marginalia Claude Code plugin — bundled reading engine with MKF compression",
+  "scripts": {
+    "build": "node build.mjs",
+    "dev": "node build.mjs --watch"
+  },
+  "dependencies": {
+    "marginalia-ai-core": "workspace:*"
+  },
+  "devDependencies": {
+    "esbuild": "^0.27.0",
+    "typescript": "^5.7.0",
+    "@types/node": "^22.0.0"
+  }
+}

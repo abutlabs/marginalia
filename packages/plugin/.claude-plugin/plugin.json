@@ -1,0 +1,15 @@
+{
+  "name": "marginalia",
+  "version": "0.2.0",
+  "description": "AI book reading engine — read books chapter-by-chapter with MKF compression, progress tracking, and bookmark-based pause/resume",
+  "skills": [
+    {
+      "name": "read-book",
+      "path": "skills/read-book/SKILL.md"
+    },
+    {
+      "name": "load-book",
+      "path": "skills/load-book/SKILL.md"
+    }
+  ]
+}
