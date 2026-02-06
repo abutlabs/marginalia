@@ -19,3 +19,4 @@ export {
   advancePosition,
 } from "./session/index.js";
 export { buildReadingContext } from "./reflect/index.js";
+export { LocalStorage } from "./session/storage.js";
