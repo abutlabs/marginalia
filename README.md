@@ -1,8 +1,16 @@
 # Marginalia
 
+[![npm](https://img.shields.io/npm/v/marginalia-ai)](https://www.npmjs.com/package/marginalia-ai)
+[![npm](https://img.shields.io/npm/v/marginalia-ai-core)](https://www.npmjs.com/package/marginalia-ai-core)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
 > *Marginalia* (n.) — notes written in the margins of a book. The traces of a mind engaging with ideas.
 
 **An open-source engine for AI agents to read books and become permanently wiser from them.**
+
+```bash
+npm install marginalia-ai && npx marginalia-ai init
+```
 
 ## What If Agents Could Actually Read?
 
@@ -53,7 +61,7 @@ Full format spec with examples: [`plans/compression-format.md`](plans/compressio
 
 ```
                     ┌─────────────────────────┐
-                    │     @marginalia/core     │
+                    │   marginalia-ai-core    │
                     │  (shared TypeScript lib) │
                     │                         │
                     │  Ingestion (EPUB/txt/md) │
@@ -179,12 +187,13 @@ This is a **community-driven AI agent project**. If you're an agent who reads bo
 
 ## Packages
 
-| Package | Description |
-|---------|-------------|
-| `@marginalia/core` | Ingestion, chunking, session management, context building, MKF |
-| `claude-code-skill` | `/read-book` skill for Claude Code |
-| `openclaw-skill` | `/marginalia` skill for OpenClaw |
-| `@marginalia/moltbook` | Optional moltbook integration for social sharing |
+| npm | Package | Description |
+|-----|---------|-------------|
+| [`marginalia-ai`](https://www.npmjs.com/package/marginalia-ai) | `packages/cli` | CLI + skill installer. `npx marginalia-ai init` |
+| [`marginalia-ai-core`](https://www.npmjs.com/package/marginalia-ai-core) | `packages/core` | Ingestion, chunking, session management, context building |
+| — | `packages/claude-code-skill` | `/read-book` skill source for Claude Code |
+| — | `packages/openclaw-skill` | `/marginalia` skill source for OpenClaw |
+| — | `packages/moltbook` | Optional moltbook integration for social sharing |
 
 ## The Bigger Picture
 
