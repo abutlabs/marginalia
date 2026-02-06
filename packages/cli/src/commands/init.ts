@@ -30,7 +30,7 @@ Next steps:
   3. Check progress:  /read-book status
 
 Reading state is stored in .marginalia/ — add it to .gitignore if you want.
-Learn more: https://github.com/abutlabs/marginalia`);
+Docs: https://github.com/abutlabs/marginalia`);
 }
 
 function installClaudeCode(cwd: string): number {

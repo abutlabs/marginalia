@@ -8,18 +8,18 @@ import { extract } from "./commands/extract.js";
 const args = argv.slice(2);
 const command = args[0];
 
-const USAGE = `marginalia — AI book reading engine
+const USAGE = `marginalia-ai — AI book reading engine
 
 Usage:
-  marginalia init [--claude-code] [--openclaw]    Set up reading skills in your project
-  marginalia ingest <file>                        Parse a book file, output chapter metadata as JSON
-  marginalia extract <file> <chapter-index>       Extract a single chapter's text from a book
+  marginalia-ai init [--claude-code] [--openclaw]    Set up reading skills in your project
+  marginalia-ai ingest <file>                        Parse a book file, output chapter metadata as JSON
+  marginalia-ai extract <file> <chapter-index>       Extract a single chapter's text from a book
 
 Examples:
-  npx marginalia init                             Install skills for all detected platforms
-  npx marginalia init --claude-code               Install Claude Code skill only
-  npx marginalia ingest book.epub                 Parse EPUB and output book.json
-  npx marginalia extract book.epub 3              Print chapter 3 text to stdout
+  npx marginalia-ai init                             Install skills for all detected platforms
+  npx marginalia-ai init --claude-code               Install Claude Code skill only
+  npx marginalia-ai ingest book.epub                 Parse EPUB and output book.json
+  npx marginalia-ai extract book.epub 3              Print chapter 3 text to stdout
 
 Learn more: https://github.com/abutlabs/marginalia`;
 
@@ -49,7 +49,7 @@ async function main(): Promise<void> {
       break;
     case "--version":
     case "-v":
-      console.log("marginalia 0.1.0");
+      console.log("marginalia-ai 0.1.0");
       break;
     default:
       console.error(`Unknown command: ${command}\n`);

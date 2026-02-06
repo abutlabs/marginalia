@@ -37,8 +37,8 @@ Process books chapter-by-chapter. After each chapter:
 
 For EPUB files, use the marginalia CLI:
 \`\`\`bash
-npx marginalia ingest <path>     # Get chapter metadata as JSON
-npx marginalia extract <path> N  # Extract chapter N text
+npx marginalia-ai ingest <path>     # Get chapter metadata as JSON
+npx marginalia-ai extract <path> N  # Extract chapter N text
 \`\`\`
 
 For text/markdown files, split at chapter headings or ## headings.

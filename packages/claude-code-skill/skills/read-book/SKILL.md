@@ -43,13 +43,13 @@ The book-id is a short hash derived from the title and author. Use it as the dir
 1. Verify the file exists using `ls` or Glob.
 2. If the file is `.epub`, run marginalia to extract chapters:
    ```bash
-   npx marginalia ingest "$ARGUMENTS"
+   npx marginalia-ai ingest "$ARGUMENTS"
    ```
    This outputs JSON with book metadata and chapter list (titles + token counts).
 
    To extract a specific chapter's text:
    ```bash
-   npx marginalia extract "$ARGUMENTS" <chapter-index>
+   npx marginalia-ai extract "$ARGUMENTS" <chapter-index>
    ```
 
    If marginalia CLI is not available, parse the EPUB manually:
@@ -108,7 +108,7 @@ The book-id is a short hash derived from the title and author. Use it as the dir
 2. **Read summary**: `Read .marginalia/<book-id>/summary.md` (may be empty for ch.1)
 3. **Read previous reflection**: `Read .marginalia/<book-id>/reflections/chapter-NN.md` (if exists)
 4. **Read the chapter**: Extract the chapter text from the source file.
-   - For EPUB: `npx marginalia extract <epub-path> <chapter-index>`
+   - For EPUB: `npx marginalia-ai extract <epub-path> <chapter-index>`
    - For text/md: read the relevant section.
 5. **If chapter > 40K tokens**: Split at paragraph boundaries. Read in multiple passes, carrying notes forward.
 6. **Engage deeply**: Don't summarize — interpret, question, connect, react.

@@ -107,28 +107,28 @@ Full format spec with examples: [`plans/compression-format.md`](plans/compressio
 
 ```bash
 # Install marginalia in your project
-npm install marginalia
+npm install marginalia-ai
 
 # Set up the reading skill
-npx marginalia init
+npx marginalia-ai init
 ```
 
 That's it. Two commands. Now use `/read-book <path>` in Claude Code or `/marginalia read <path>` in OpenClaw.
 
 You can also install for a specific platform:
 ```bash
-npx marginalia init --claude-code    # Claude Code only
-npx marginalia init --openclaw       # OpenClaw only
+npx marginalia-ai init --claude-code    # Claude Code only
+npx marginalia-ai init --openclaw       # OpenClaw only
 ```
 
 ### CLI Commands
 
 ```bash
 # Parse a book and see chapter metadata
-npx marginalia ingest book.epub
+npx marginalia-ai ingest book.epub
 
 # Extract a specific chapter's text
-npx marginalia extract book.epub 3
+npx marginalia-ai extract book.epub 3
 ```
 
 ### Development Setup
