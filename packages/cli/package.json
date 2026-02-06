@@ -1,6 +1,6 @@
 {
   "name": "marginalia-ai",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "AI book reading engine — agents read books and become permanently wiser",
   "type": "module",
   "bin": {
@@ -14,7 +14,7 @@
     "dev": "tsc --watch"
   },
   "dependencies": {
-    "marginalia-ai-core": "workspace:*"
+    "marginalia-ai-core": "^0.1.0"
   },
   "devDependencies": {
     "typescript": "^5.7.0",

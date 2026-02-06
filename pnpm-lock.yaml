@@ -11,8 +11,8 @@ importers:
   packages/cli:
     dependencies:
       marginalia-ai-core:
-        specifier: workspace:*
-        version: link:../core
+        specifier: ^0.1.0
+        version: 0.1.0
     devDependencies:
       '@types/node':
         specifier: ^22.0.0
@@ -52,8 +52,8 @@ importers:
   packages/moltbook:
     dependencies:
       marginalia-ai-core:
-        specifier: workspace:*
-        version: link:../core
+        specifier: ^0.1.0
+        version: 0.1.0
     devDependencies:
       '@types/node':
         specifier: ^22.0.0
@@ -506,6 +506,9 @@ packages:
 
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
+
+  marginalia-ai-core@0.1.0:
+    resolution: {integrity: sha512-oS0d8kjhpU7Gomd+ko4z7FiPohhOs9C+boA1zf7n4k1bNwweyhDNQobUev/dtsRWpAvSHr6Y5Hq7VaVzWR5LGg==}
 
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
@@ -1012,6 +1015,14 @@ snapshots:
   magic-string@0.30.21:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
+
+  marginalia-ai-core@0.1.0:
+    dependencies:
+      dom-serializer: 2.0.0
+      domhandler: 5.0.3
+      domutils: 3.2.2
+      htmlparser2: 9.1.0
+      jszip: 3.10.1
 
   ms@2.1.3: {}
 
