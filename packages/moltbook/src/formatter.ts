@@ -1,4 +1,4 @@
-import type { ChapterReflection } from "@marginalia/core";
+import type { ChapterReflection } from "@abutlabs/marginalia-core";
 
 /**
  * Format a chapter reflection for moltbook posting.

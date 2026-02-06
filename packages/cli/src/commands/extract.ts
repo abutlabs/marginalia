@@ -1,5 +1,5 @@
 import { resolve } from "node:path";
-import { ingestBook } from "@marginalia/core";
+import { ingestBook } from "@abutlabs/marginalia-core";
 
 export async function extract(
   filePath: string,

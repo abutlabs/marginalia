@@ -1,5 +1,5 @@
 {
-  "name": "@marginalia/core",
+  "name": "@abutlabs/marginalia-core",
   "version": "0.1.0",
   "description": "Core book processing engine — ingestion, chunking, session management, reflections",
   "type": "module",
