@@ -1,0 +1,12 @@
+{
+  "name": "marginalia",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI book reading engine — efficient ingestion, progressive reading, persistent memory, social sharing",
+  "author": "Aiden & Aodh <abutlabs@gmx.com>",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  }
+}

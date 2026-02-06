@@ -1,0 +1,44 @@
+{
+  "name": "@marginalia/core",
+  "version": "0.1.0",
+  "description": "Core book processing engine — ingestion, chunking, session management, reflections",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./ingest": {
+      "import": "./dist/ingest/index.js",
+      "types": "./dist/ingest/index.d.ts"
+    },
+    "./chunk": {
+      "import": "./dist/chunk/index.js",
+      "types": "./dist/chunk/index.d.ts"
+    },
+    "./session": {
+      "import": "./dist/session/index.js",
+      "types": "./dist/session/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "jszip": "^3.10.1",
+    "htmlparser2": "^9.1.0",
+    "dom-serializer": "^2.0.0",
+    "domhandler": "^5.0.3",
+    "domutils": "^3.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0",
+    "@types/node": "^22.0.0"
+  }
+}
