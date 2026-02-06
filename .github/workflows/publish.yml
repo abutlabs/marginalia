@@ -21,7 +21,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          registry-url: "https://registry.npmjs.org"
+
+      - name: Configure npm for OIDC publishing
+        run: |
+          npm config set registry https://registry.npmjs.org/
+          npm config delete //registry.npmjs.org/:_authToken || true
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
