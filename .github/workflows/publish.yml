@@ -29,10 +29,14 @@ jobs:
       - name: Build all packages
         run: pnpm -r build
 
-      - name: Publish @abutlabs/marginalia-core
+      - name: Publish marginalia-ai-core
         working-directory: packages/core
         run: npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish marginalia-ai
         working-directory: packages/cli
         run: npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

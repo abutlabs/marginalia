@@ -10,7 +10,7 @@ importers:
 
   packages/cli:
     dependencies:
-      '@abutlabs/marginalia-core':
+      marginalia-ai-core:
         specifier: workspace:*
         version: link:../core
     devDependencies:
@@ -51,7 +51,7 @@ importers:
 
   packages/moltbook:
     dependencies:
-      '@abutlabs/marginalia-core':
+      marginalia-ai-core:
         specifier: workspace:*
         version: link:../core
     devDependencies:

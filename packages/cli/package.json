@@ -14,7 +14,7 @@
     "dev": "tsc --watch"
   },
   "dependencies": {
-    "@abutlabs/marginalia-core": "workspace:*"
+    "marginalia-ai-core": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.7.0",
