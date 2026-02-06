@@ -30,6 +30,8 @@ import {
   validateMkfFile,
   frameMkfForContext,
   finalizeCompression,
+  buildMkfFromJson,
+  type MkfJsonExtraction,
 } from "marginalia-ai-core/mkf";
 import {
   createBookmark,
@@ -63,7 +65,7 @@ async function cmdIngest(filePath: string): Promise<void> {
   await storage.saveSummary(book.id, "");
   await storage.saveMkf(book.id, "");
 
-  // Output TOC as JSON
+  // Output TOC as JSON with nextCommand
   const toc = {
     id: book.id,
     title: book.title,
@@ -77,6 +79,7 @@ async function cmdIngest(filePath: string): Promise<void> {
       tokenCount: ch.tokenCount,
       wordCount: ch.metadata.wordCount,
     })),
+    nextCommand: `chapter ${book.id} 0`,
   };
   console.log(JSON.stringify(toc, null, 2));
 }
@@ -106,6 +109,8 @@ async function cmdChapter(bookId: string, chapterIndex: number): Promise<void> {
     summary,
     mkf,
     previousReflection,
+    nextCommand: "PRODUCE_EXTRACTION",
+    saveCommand: `save ${bookId} ${chapterIndex}`,
   };
   console.log(JSON.stringify(result, null, 2));
 }
@@ -129,7 +134,8 @@ async function cmdSave(bookId: string, chapterIndex: number): Promise<void> {
   const pending = JSON.parse(pendingContent) as {
     reflection: string;
     summary: string;
-    mkfExtraction: string;
+    extraction?: MkfJsonExtraction;
+    mkfExtraction?: string; // backward compat
   };
 
   // Save timestamped reflection (immutable)
@@ -154,15 +160,52 @@ async function cmdSave(bookId: string, chapterIndex: number): Promise<void> {
   // Update summary
   await storage.saveSummary(bookId, pending.summary);
 
-  // Merge MKF
+  // Load state and book metadata for context
+  const state = await storage.loadState(bookId);
+  let bookMeta: { totalTokens: number; totalWords: number } = {
+    totalTokens: 0,
+    totalWords: 0,
+  };
+  try {
+    const metaRaw = await readFile(
+      join(resolve(MARGINALIA_DIR), bookId, "book.json"),
+      "utf-8",
+    );
+    bookMeta = JSON.parse(metaRaw);
+  } catch {
+    // Fall back to zeros if book.json unavailable
+  }
+
+  // Build MKF from JSON extraction (preferred) or parse raw MKF text (backward compat)
   const existingMkfText = await storage.loadMkf(bookId);
   const existingMkf = existingMkfText ? parseMkf(existingMkfText) : emptyMkf();
-  const chapterMkf = parseMkf(pending.mkfExtraction);
+
+  let chapterMkf;
+  if (pending.extraction) {
+    chapterMkf = buildMkfFromJson(pending.extraction, {
+      bookTitle: state.bookTitle,
+      bookAuthor: state.bookAuthor,
+      bookId,
+      totalTokens: bookMeta.totalTokens,
+      totalWords: bookMeta.totalWords,
+      totalChapters: state.totalChapters,
+      chapterIndex,
+      sessionId: state.sessionId,
+      reader: state.bookAuthor, // default reader; overridden at export
+    });
+  } else if (pending.mkfExtraction) {
+    chapterMkf = parseMkf(pending.mkfExtraction);
+  } else {
+    console.error(
+      "pending-save.json must contain 'extraction' (JSON) or 'mkfExtraction' (MKF text)",
+    );
+    process.exit(1);
+  }
+
   const mergedMkf = mergeMkf(existingMkf, chapterMkf);
   await storage.saveMkf(bookId, serializeMkf(mergedMkf));
 
   // Update state
-  const state = await storage.loadState(bookId);
   const totalChapters = state.totalChapters;
   const nextChapter = chapterIndex + 1;
   const updatedState: ReadingState = {
@@ -177,6 +220,11 @@ async function cmdSave(bookId: string, chapterIndex: number): Promise<void> {
   // Auto-bookmark
   await createBookmark(storage, bookId, updatedState, "auto");
 
+  // Determine next command
+  const nextCommand = updatedState.completed
+    ? `export ${bookId}`
+    : `chapter ${bookId} ${nextChapter}`;
+
   console.log(
     JSON.stringify({
       saved: true,
@@ -185,6 +233,7 @@ async function cmdSave(bookId: string, chapterIndex: number): Promise<void> {
       nextChapter,
       completed: updatedState.completed,
       mkfTokens: serializeMkf(mergedMkf).length / 4,
+      nextCommand,
     }),
   );
 }
@@ -336,6 +385,7 @@ async function cmdExport(bookId: string, args: string[]): Promise<void> {
       tokens: Math.ceil(envelope.content.length / 4),
       book: state.bookTitle,
       author: state.bookAuthor,
+      nextCommand: "DONE",
     }),
   );
 }

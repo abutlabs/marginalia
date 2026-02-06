@@ -13429,6 +13429,80 @@ function findLastIndex2(arr, pred) {
   return -1;
 }
 
+// ../core/dist/mkf/json-input.js
+function formatTokenCount(n) {
+  return n >= 1e3 ? `${Math.round(n / 1e3)}K` : String(n);
+}
+function buildMkfFromJson(extraction, context) {
+  const themes = (extraction.themes ?? []).map((t) => ({
+    name: t.name,
+    properties: t.properties ?? {}
+  }));
+  const relationships = (extraction.relationships ?? []).map((r) => ({
+    from: r.from,
+    arrow: r.arrow,
+    to: r.to,
+    annotation: r.annotation ?? ""
+  }));
+  const structure = {
+    properties: extraction.structure ?? {}
+  };
+  const concepts = (extraction.concepts ?? []).map((c) => ({
+    name: c.name,
+    properties: c.properties ?? {}
+  }));
+  const facts = {
+    entries: extraction.facts ?? {}
+  };
+  const insights = (extraction.insights ?? []).map((i) => ({
+    significant: i.significant ?? false,
+    text: i.text
+  }));
+  const questions = (extraction.questions ?? []).map((q) => ({
+    text: q
+  }));
+  const connections = (extraction.connections ?? []).map((c) => ({
+    target: c.target,
+    text: c.text
+  }));
+  const frameworks = (extraction.frameworks ?? []).map((f) => ({
+    name: f.name,
+    properties: f.properties ?? {}
+  }));
+  return {
+    header: {
+      book: context.bookTitle,
+      by: context.bookAuthor,
+      id: context.bookId,
+      tokens: formatTokenCount(context.totalTokens),
+      words: formatTokenCount(context.totalWords),
+      chapters: context.totalChapters,
+      read: (/* @__PURE__ */ new Date()).toISOString().slice(0, 10),
+      reader: context.reader
+    },
+    tier1: {
+      themes,
+      relationships,
+      structure,
+      concepts,
+      facts
+    },
+    tier2: {
+      insights,
+      questions,
+      connections,
+      frameworks
+    },
+    meta: {
+      session: context.sessionId.slice(0, 8),
+      chaptersRead: `${context.chapterIndex + 1}/${context.totalChapters}`,
+      confidence: extraction.confidence ?? 0.7,
+      compressionRatio: "",
+      format: "MKF v1.0"
+    }
+  };
+}
+
 // scripts/entry.ts
 var MARGINALIA_DIR = ".marginalia";
 function getStorage() {
@@ -13459,7 +13533,8 @@ async function cmdIngest(filePath) {
       title: ch.title,
       tokenCount: ch.tokenCount,
       wordCount: ch.metadata.wordCount
-    }))
+    })),
+    nextCommand: `chapter ${book.id} 0`
   };
   console.log(JSON.stringify(toc, null, 2));
 }
@@ -13481,7 +13556,9 @@ async function cmdChapter(bookId, chapterIndex) {
     text: chapterText,
     summary,
     mkf,
-    previousReflection
+    previousReflection,
+    nextCommand: "PRODUCE_EXTRACTION",
+    saveCommand: `save ${bookId} ${chapterIndex}`
   };
   console.log(JSON.stringify(result, null, 2));
 }
@@ -13513,12 +13590,45 @@ async function cmdSave(bookId, chapterIndex) {
     "utf-8"
   );
   await storage.saveSummary(bookId, pending.summary);
+  const state = await storage.loadState(bookId);
+  let bookMeta = {
+    totalTokens: 0,
+    totalWords: 0
+  };
+  try {
+    const metaRaw = await readFile3(
+      join2(resolve(MARGINALIA_DIR), bookId, "book.json"),
+      "utf-8"
+    );
+    bookMeta = JSON.parse(metaRaw);
+  } catch {
+  }
   const existingMkfText = await storage.loadMkf(bookId);
   const existingMkf = existingMkfText ? parseMkf(existingMkfText) : emptyMkf();
-  const chapterMkf = parseMkf(pending.mkfExtraction);
+  let chapterMkf;
+  if (pending.extraction) {
+    chapterMkf = buildMkfFromJson(pending.extraction, {
+      bookTitle: state.bookTitle,
+      bookAuthor: state.bookAuthor,
+      bookId,
+      totalTokens: bookMeta.totalTokens,
+      totalWords: bookMeta.totalWords,
+      totalChapters: state.totalChapters,
+      chapterIndex,
+      sessionId: state.sessionId,
+      reader: state.bookAuthor
+      // default reader; overridden at export
+    });
+  } else if (pending.mkfExtraction) {
+    chapterMkf = parseMkf(pending.mkfExtraction);
+  } else {
+    console.error(
+      "pending-save.json must contain 'extraction' (JSON) or 'mkfExtraction' (MKF text)"
+    );
+    process.exit(1);
+  }
   const mergedMkf = mergeMkf(existingMkf, chapterMkf);
   await storage.saveMkf(bookId, serializeMkf(mergedMkf));
-  const state = await storage.loadState(bookId);
   const totalChapters = state.totalChapters;
   const nextChapter = chapterIndex + 1;
   const updatedState = {
@@ -13530,6 +13640,7 @@ async function cmdSave(bookId, chapterIndex) {
   };
   await storage.saveState(updatedState);
   await createBookmark(storage, bookId, updatedState, "auto");
+  const nextCommand = updatedState.completed ? `export ${bookId}` : `chapter ${bookId} ${nextChapter}`;
   console.log(
     JSON.stringify({
       saved: true,
@@ -13537,7 +13648,8 @@ async function cmdSave(bookId, chapterIndex) {
       chapterIndex,
       nextChapter,
       completed: updatedState.completed,
-      mkfTokens: serializeMkf(mergedMkf).length / 4
+      mkfTokens: serializeMkf(mergedMkf).length / 4,
+      nextCommand
     })
   );
 }
@@ -13653,7 +13765,8 @@ async function cmdExport(bookId, args2) {
       sha256: envelope.sha256,
       tokens: Math.ceil(envelope.content.length / 4),
       book: state.bookTitle,
-      author: state.bookAuthor
+      author: state.bookAuthor,
+      nextCommand: "DONE"
     })
   );
 }

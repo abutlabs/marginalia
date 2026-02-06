@@ -26,3 +26,5 @@ export {
   frameMkfForContext,
 } from "./file.js";
 export { finalizeCompression } from "./compress.js";
+export type { MkfJsonExtraction, MkfBuildContext } from "./json-input.js";
+export { buildMkfFromJson } from "./json-input.js";

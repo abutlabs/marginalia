@@ -29,7 +29,7 @@ Load compressed book knowledge into your session memory. An `.mkf` file is a Mar
    - Answer questions about its themes, characters, structure, and ideas
    - Reference its insights and frameworks in conversation
    - Connect it to other books or topics
-   - Apply its frameworks (`@fw` blocks) to new situations
+   - Apply its frameworks — @fw blocks — to new situations
 
 4. Tell the user what was loaded — title, author, compression ratio, confidence level.
 
@@ -52,18 +52,18 @@ You can load multiple `.mkf` files in one session. Each book's knowledge is inde
 
 When you read the loaded knowledge:
 
-**Tier-1 (Structural)** — What the book IS. Universal knowledge any reader would extract:
-- `@theme` — Major themes with causal relationships
-- `@rel` — Character/concept relationships (`From →arrow→ To`)
-- `@struct` — Narrative or argumentative structure
-- `@concept` — Key ideas with definitions
-- `@facts` — Verifiable claims
+**Tier-1 — Structural** — What the book IS. Universal knowledge any reader would extract:
+- @theme — Major themes with causal relationships
+- @rel — Character/concept relationships: "From →arrow→ To"
+- @struct — Narrative or argumentative structure
+- @concept — Key ideas with definitions
+- @facts — Verifiable claims
 
 **Tier-2 (Personal)** — What the READER learned. Unique to who compressed this:
-- `@insights` — `!` = significant (high confidence), plain = normal
-- `@questions` — `?` = genuine unknowns, gaps in understanding
-- `@connections` — `~` = links to other books, ideas, projects
-- `@fw` — Extracted frameworks (IF/THEN patterns, reusable reasoning tools)
+- @insights — marked with "!" for significant, plain for normal
+- @questions — marked with "?" for genuine unknowns, gaps in understanding
+- @connections — marked with "~" for links to other books, ideas, projects
+- @fw — Extracted frameworks, IF/THEN patterns, reusable reasoning tools
 
 ## Finding the Script
 

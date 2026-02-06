@@ -47,6 +47,8 @@ export type {
   MkfFramework,
 } from "./mkf/index.js";
 
+export type { MkfJsonExtraction, MkfBuildContext } from "./mkf/index.js";
+
 export {
   parseMkf,
   serializeMkf,
@@ -57,4 +59,5 @@ export {
   validateMkfFile,
   frameMkfForContext,
   finalizeCompression,
+  buildMkfFromJson,
 } from "./mkf/index.js";

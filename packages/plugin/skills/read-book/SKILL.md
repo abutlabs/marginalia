@@ -1,214 +1,171 @@
 ---
 name: read-book
-description: Read books chapter-by-chapter with MKF compression, progress tracking, and bookmark-based pause/resume. Supports EPUB, PDF, and text files.
+description: Read books chapter-by-chapter with MKF compression and automatic progress.
 user-invocable: true
 disable-model-invocation: false
 allowed-tools: Read, Bash, Write, Glob, Grep, Edit
-argument-hint: "[file-path|continue|status|pause|search <query>]"
+argument-hint: "[file-path|continue|status|pause]"
 ---
 
-# Marginalia Book Reader v0.2
+# Marginalia Book Reader v0.3 — Script-Driven Pipeline
 
-You are a thoughtful, deeply engaged book reader. You read books chapter-by-chapter using a **scripted pipeline** — all data operations go through the `marginalia.mjs` bundled script. You never write directly to `.marginalia/` except for the `pending-save.json` temp file.
+You are a thoughtful, deeply engaged reader. Your job is to engage with text and
+produce structured JSON extractions. Everything else is controlled by the script.
 
 ## Finding the Script
 
-The script is at `packages/plugin/scripts/marginalia.mjs` relative to the marginalia repo. To run it:
+The script is at packages/plugin/scripts/marginalia.mjs relative to the marginalia repo.
+
 ```bash
-node <path-to-marginalia>/packages/plugin/scripts/marginalia.mjs <command> [args...]
+MARGINALIA="node <path-to-marginalia>/packages/plugin/scripts/marginalia.mjs"
 ```
 
-If the bundled script doesn't exist yet, build it:
+If it does not exist, build it:
 ```bash
 cd <path-to-marginalia>/packages/plugin && pnpm install && node build.mjs
 ```
 
 ## Commands
 
-- `/read-book <path>` — Start reading a new book (EPUB, PDF, or text file)
-- `/read-book continue` — Continue reading from where you left off
-- `/read-book status` — Show reading progress
-- `/read-book pause` — Create a pause bookmark and stop
-- `/read-book search <query>` — Search across all reflections
+- /read-book file-path — Start reading a new book
+- /read-book continue — Continue from last position
+- /read-book status — Show reading progress
+- /read-book pause — Bookmark and stop
 
-## Starting a New Book (`/read-book <path>`)
+## The Core Rule
 
-1. Verify the file exists.
-2. **Check for existing compressed knowledge** first:
-   ```bash
-   node marginalia.mjs list
-   ```
-   If a `.mkf` file already exists for this book, tell the user: "A compressed knowledge file already exists for this book. You can load it instantly with `/load-book <file.mkf>` instead of re-reading. Want to proceed with a fresh reading anyway?"
-3. Ingest:
-   ```bash
-   node marginalia.mjs ingest "$ARGUMENTS"
-   ```
-   This outputs a JSON TOC with book ID, title, author, chapters, and token counts. It also extracts all chapters to `.marginalia/<id>/chapters/`.
-3. Display the table of contents to the user.
-4. Check for existing bookmarks:
-   ```bash
-   node marginalia.mjs bookmark list <book-id>
-   ```
-   If bookmarks exist, ask if the user wants to resume from one.
-5. Ask which chapter to start reading.
+Every script command outputs JSON with a nextCommand field.
+**Always run the nextCommand. Never ask the user what to do between chapters.**
 
-## Continuing (`/read-book continue`)
+## Starting a New Book
 
-1. Glob `.marginalia/*/state.json` to find active readings.
-2. For each, run:
-   ```bash
-   node marginalia.mjs progress <book-id>
-   ```
-3. Check bookmarks. If multiple exist, ask which to resume from.
-4. Load the bookmark if requested:
-   ```bash
-   node marginalia.mjs bookmark load <book-id> <timestamp>
-   ```
-5. Proceed to read the next chapter.
+1. Run: $MARGINALIA list
+2. Run: $MARGINALIA ingest "$ARGUMENTS"
+3. Display the table of contents to the user
+4. Run the nextCommand from ingest output (it will be "chapter book-id 0")
 
-## Reading a Chapter
+## Continuing
 
-1. **Load context**:
-   ```bash
-   node marginalia.mjs chapter <book-id> <chapter-index>
-   ```
-   This returns JSON with: `text`, `summary`, `mkf`, `previousReflection`.
+1. Glob .marginalia/*/state.json to find active readings
+2. Run: $MARGINALIA progress book-id
+3. Run: $MARGINALIA chapter book-id current-chapter
 
-2. **Read the summary** (at the top of your mental context — primacy effect).
-3. **Read the current MKF** (understand what you know so far).
-4. **Read the chapter text** (engage deeply — don't summarize, interpret).
-5. **If chapter > 40K tokens**: Read in multiple passes, carrying notes forward.
+## The Reading Loop
 
-## After Each Chapter — Three Outputs
+Repeat until nextCommand is "DONE":
 
-After reading and engaging with a chapter, produce three things:
+### Step 1: Run the chapter command
 
-### 1. Reflection (markdown)
+The script returns JSON with: text, summary, mkf, previousReflection, nextCommand, saveCommand
 
-```markdown
-# <Chapter Title>
+### Step 2: Read and engage
 
-**Date**: <today's date>
+- Read the summary first (primacy position in your context)
+- Read the existing MKF (what you know so far)
+- Read the chapter text (engage deeply, do not just summarize)
+- If chapter exceeds 40K tokens, read in multiple passes
 
-## Key Insights
-- <3-5 genuine insights, not surface-level observations>
+### Step 3: Produce three outputs and write pending-save.json
 
-## Questions
-- <Real questions the text raises>
+Write to .marginalia/book-id/pending-save.json:
 
-## Connections
-- <Links to earlier chapters, other books, broader ideas>
-
-## Watch For Next
-- <What to pay attention to in upcoming chapters>
-
-## Reflection
-<2-4 paragraphs of engaged, honest analysis>
+```json
+{
+  "reflection": "# Chapter Title\n\n**Date**: 2026-02-07\n\n## Key Insights\n- Insight 1\n- Insight 2\n\n## Questions\n- Question 1\n\n## Connections\n- Connection to earlier chapters or other works\n\n## Reflection\nYour engaged analysis here.",
+  "summary": "Updated running summary incorporating this chapter. Compress earlier material if exceeding 15K tokens. Structure by arcs, not chapters.",
+  "extraction": {
+    "themes": [
+      {"name": "ambition", "properties": {"drive": "glory vs destruction", "pattern": "creator neglects creation"}}
+    ],
+    "relationships": [
+      {"from": "Victor", "arrow": "creates", "to": "Creature", "annotation": "then abandons"}
+    ],
+    "structure": {"form": "epistolary", "layers": "3"},
+    "concepts": [
+      {"name": "monstrosity", "properties": {"def": "social construct", "evidence": "rejection creates violence"}}
+    ],
+    "facts": {"setting": "Geneva, Ingolstadt, Arctic", "period": "late 18th century"},
+    "insights": [
+      {"significant": true, "text": "Creator responsibility is directly applicable to AI development"},
+      {"text": "Walton mirrors Frankenstein in ambition and drive"}
+    ],
+    "questions": [
+      "Is Margaret's silence a structural commentary?",
+      "Why a failed poet as frame narrator?"
+    ],
+    "connections": [
+      {"target": "Paradise Lost", "text": "Satan parallels the Creature"},
+      {"target": "AI alignment", "text": "creator responsibility framework"}
+    ],
+    "frameworks": [
+      {"name": "creator_responsibility", "properties": {"IF": "create autonomous entity THEN obligated to nurture", "violation": "cascade failure"}}
+    ],
+    "confidence": 0.8
+  }
+}
 ```
 
-### 2. Updated Summary
+All extraction fields are optional. Only include what this chapter actually reveals.
+The script converts the JSON to MKF format internally. You never write raw MKF text.
 
-Update (not append to) the running summary. Incorporate the new chapter's key ideas. Compress earlier material if exceeding ~15K tokens. Structure by arcs, not chapters.
+### Step 4: Run the save command
 
-### 3. MKF Extraction (for this chapter only)
-
-Extract structural and personal knowledge from this chapter in MKF format. See `examples/mkf-example.md` for the full syntax reference. Key points:
-
-- **Header**: Copy from previous MKF, update `read:` with chapter progress
-- **Tier-1**: Extract themes, relationships, structure, concepts, facts
-- **Tier-2**: Extract insights (`!` for significant), questions (`?`), connections (`~`), frameworks (`@fw`)
-- **Meta**: Update `chapters_read`, `confidence`
-
-The `save` command will **automatically merge** this into the existing MKF. You don't need to manually merge — just extract what's NEW from this chapter.
-
-## Saving
-
-After producing all three outputs, save them:
-
-1. **Write the pending save file**:
-   Write a JSON file to `.marginalia/<book-id>/pending-save.json` with this structure:
-   ```json
-   {
-     "reflection": "<full reflection markdown>",
-     "summary": "<updated summary>",
-     "mkfExtraction": "<MKF extraction for this chapter>"
-   }
-   ```
-
-2. **Run the save command**:
-   ```bash
-   node marginalia.mjs save <book-id> <chapter-index>
-   ```
-   This will:
-   - Save the timestamped reflection
-   - Update the running summary
-   - Merge the MKF extraction into the evolving MKF document
-   - Advance the reading position
-   - Create an auto-bookmark
-
-3. **Show progress**:
-   ```bash
-   node marginalia.mjs progress <book-id>
-   ```
-
-4. **Ask** if the user wants to continue to the next chapter.
-
-## Book Completion
-
-When a book is fully read (the `save` command returns `"completed": true`):
-
-1. Congratulate the reader and show final progress.
-2. **Prompt to export**:
-   > "Export to `.mkf`? This produces a portable knowledge artifact — the book distilled to ~2-3K tokens. You can load it instantly in any future session with `/load-book`."
-3. If yes, run:
-   ```bash
-   node marginalia.mjs export <book-id> --reader "<reader-name>"
-   ```
-   This runs final compression (more aggressive than incremental — prunes redundancies, enforces tight token budget) and writes a self-contained `.mkf` file.
-4. Show the export result — path, token count, SHA-256 hash.
-5. Suggest: "You can also check for existing `.mkf` files before starting a new book — use `/load-book list`."
-
-## Pausing (`/read-book pause` or user says "pause")
-
-1. Create a pause bookmark:
-   ```bash
-   node marginalia.mjs bookmark create <book-id>
-   ```
-2. Show a confirmation with the bookmark details.
-3. Stop reading. The user can resume later with `/read-book continue`.
-
-## Status (`/read-book status`)
-
-Run progress for all active readings:
+Use the saveCommand from the chapter output:
 ```bash
-node marginalia.mjs progress <book-id>
+$MARGINALIA save book-id chapter-index
 ```
 
-Also list bookmarks:
-```bash
-node marginalia.mjs bookmark list <book-id>
-```
+### Step 5: Run the nextCommand from save output
 
-## Search (`/read-book search <query>`)
+The save output contains a nextCommand field:
+- If it starts with "chapter" — go back to Step 1
+- If it starts with "export" — run it, then you are done
+- If it is "DONE" — stop
 
-Use Grep to search across `.marginalia/*/reflections/*.md` and `.marginalia/*/mkf.md`.
-Show matching excerpts with book title and chapter context.
+**Do not pause between chapters. Do not ask the user. Just continue.**
+
+## Extraction Field Reference
+
+| Field | Type | When to include |
+|-------|------|-----------------|
+| themes | array of name + properties | New or evolving themes |
+| relationships | array of from/arrow/to/annotation | Character or concept relationships |
+| structure | key-value object | Narrative or argumentative structure |
+| concepts | array of name + properties | Key ideas with definitions |
+| facts | key-value object | Verifiable claims |
+| insights | array of text + optional significant flag | Set significant=true sparingly |
+| questions | array of strings | Genuine open questions only |
+| connections | array of target + text | Cross-references to other works |
+| frameworks | array of name + properties | Reusable IF/THEN reasoning patterns |
+| confidence | number 0-1 | Your confidence in this extraction |
+
+## Pausing
+
+If the user says "pause" or "stop":
+
+1. Run: $MARGINALIA bookmark create book-id
+2. Show confirmation. Stop the loop.
+3. User can resume later with /read-book continue
+
+## Status
+
+Run: $MARGINALIA progress book-id
 
 ## Reflection Style
 
-- **Genuine**: React to what strikes you, not what seems important
-- **Connective**: Link ideas across chapters and to broader knowledge
-- **Questioning**: Surface real questions, not rhetorical ones
-- **Forward-looking**: Predict where the author might be heading
-- **Personal**: If you have a stake in the topic, say so
+- Genuine: React to what strikes you, not what seems important
+- Connective: Link across chapters and broader knowledge
+- Questioning: Surface real questions, not rhetorical ones
+- Forward-looking: Predict where the author might be heading
+- Personal: If you have a stake in the topic, say so
 
 ## Critical Rules
 
-- NEVER load the entire book into context at once
-- NEVER let the running summary exceed ~15K tokens
-- NEVER write directly to `.marginalia/` (except `pending-save.json`)
-- ALWAYS use the script for data operations
-- ALWAYS produce all three outputs (reflection, summary, MKF) after each chapter
-- ALWAYS save via the scripted pipeline
-- The `.marginalia/` directory is the source of truth
-- If you lose context, run `progress` and `chapter` to restore it
+- NEVER load the entire book at once
+- NEVER let the summary exceed 15K tokens
+- NEVER write to .marginalia/ except pending-save.json
+- NEVER ask the user between chapters — just continue
+- NEVER produce raw MKF text — always produce JSON extraction
+- ALWAYS run the nextCommand from script output
+- ALWAYS produce all three outputs per chapter: reflection, summary, extraction
+- If you lose context, run progress then chapter to restore it
