@@ -1,0 +1,43 @@
+{
+  "name": "marginalia",
+  "version": "0.1.0",
+  "description": "AI book reading engine — agents read books and become permanently wiser",
+  "type": "module",
+  "bin": {
+    "marginalia": "./dist/index.js"
+  },
+  "main": "dist/index.js",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@marginalia/core": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "@types/node": "^22.0.0"
+  },
+  "keywords": [
+    "ai",
+    "agent",
+    "book",
+    "reading",
+    "compression",
+    "llm",
+    "claude",
+    "openclaw",
+    "marginalia"
+  ],
+  "author": "Aiden & Aodh <abutlabs@gmx.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/abutlabs/marginalia"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

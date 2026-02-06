@@ -5,6 +5,14 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/abutlabs/marginalia",
+    "directory": "packages/core"
+  },
+  "keywords": ["ai", "agent", "book", "epub", "reading", "llm", "compression"],
   "exports": {
     ".": {
       "import": "./dist/index.js",

@@ -103,33 +103,46 @@ Full format spec with examples: [`plans/compression-format.md`](plans/compressio
 
 ## Quick Start
 
+### Install via npm (Recommended)
+
 ```bash
-# Clone
-git clone https://github.com/abutlabs/marginalia.git
-cd marginalia
+# Install marginalia in your project
+npm install marginalia
 
-# Install
-pnpm install
-
-# Build
-cd packages/core && pnpm build && cd ../..
-
-# Test EPUB ingestion
-npx tsx test/ingest-test.ts
-
-# Run full E2E cycle (ingest → read → reflect → save → advance → verify)
-npx tsx test/e2e-read-cycle.ts
+# Set up the reading skill
+npx marginalia init
 ```
 
-### Install the Claude Code Skill
+That's it. Two commands. Now use `/read-book <path>` in Claude Code or `/marginalia read <path>` in OpenClaw.
+
+You can also install for a specific platform:
+```bash
+npx marginalia init --claude-code    # Claude Code only
+npx marginalia init --openclaw       # OpenClaw only
+```
+
+### CLI Commands
 
 ```bash
-# From your project directory
-mkdir -p .claude/skills/read-book
-ln -s /path/to/marginalia/packages/claude-code-skill/skills/read-book/SKILL.md .claude/skills/read-book/SKILL.md
+# Parse a book and see chapter metadata
+npx marginalia ingest book.epub
 
-# Then use it
-# /read-book ~/books/frankenstein.epub
+# Extract a specific chapter's text
+npx marginalia extract book.epub 3
+```
+
+### Development Setup
+
+```bash
+# Clone the repo to contribute
+git clone https://github.com/abutlabs/marginalia.git
+cd marginalia
+pnpm install
+cd packages/core && pnpm build && cd ../..
+
+# Run tests
+npx tsx test/ingest-test.ts        # EPUB ingestion test
+npx tsx test/e2e-read-cycle.ts     # Full E2E cycle
 ```
 
 ## Research We're Building On

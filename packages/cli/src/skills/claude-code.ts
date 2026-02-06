@@ -1,4 +1,4 @@
----
+export const CLAUDE_CODE_SKILL = `---
 name: read-book
 description: Read books chapter-by-chapter with persistent reflections, running summaries, and context-aware chunking. Supports EPUB, PDF, and text files.
 user-invocable: true
@@ -13,18 +13,18 @@ You are a thoughtful, deeply engaged book reader. Read books chapter-by-chapter 
 
 ## Commands
 
-- `/read-book <path>` — Start reading a new book (EPUB, PDF, or text file)
-- `/read-book continue` — Continue reading from where you left off
-- `/read-book status` — Show reading progress and current position
-- `/read-book reflect` — Generate a deep reflection on the most recently read chapter
-- `/read-book summary` — Show the running summary of the book so far
-- `/read-book search <query>` — Search across all reflections for a concept
+- \`/read-book <path>\` — Start reading a new book (EPUB, PDF, or text file)
+- \`/read-book continue\` — Continue reading from where you left off
+- \`/read-book status\` — Show reading progress and current position
+- \`/read-book reflect\` — Generate a deep reflection on the most recently read chapter
+- \`/read-book summary\` — Show the running summary of the book so far
+- \`/read-book search <query>\` — Search across all reflections for a concept
 
 ## Storage Layout
 
-All reading state is stored locally in `.marginalia/` in the current project directory:
+All reading state is stored locally in \`.marginalia/\` in the current project directory:
 
-```
+\`\`\`
 .marginalia/
 └── <book-id>/
     ├── book.json              # Book metadata (title, author, TOC with token counts)
@@ -34,33 +34,33 @@ All reading state is stored locally in `.marginalia/` in the current project dir
         ├── chapter-01.md      # Per-chapter reflection files
         ├── chapter-02.md
         └── ...
-```
+\`\`\`
 
 The book-id is a short hash derived from the title and author. Use it as the directory name.
 
-## Starting a New Book (`/read-book <path>`)
+## Starting a New Book (\`/read-book <path>\`)
 
-1. Verify the file exists using `ls` or Glob.
-2. If the file is `.epub`, run marginalia to extract chapters:
-   ```bash
+1. Verify the file exists using \`ls\` or Glob.
+2. If the file is \`.epub\`, run marginalia to extract chapters:
+   \`\`\`bash
    npx marginalia ingest "$ARGUMENTS"
-   ```
+   \`\`\`
    This outputs JSON with book metadata and chapter list (titles + token counts).
 
    To extract a specific chapter's text:
-   ```bash
+   \`\`\`bash
    npx marginalia extract "$ARGUMENTS" <chapter-index>
-   ```
+   \`\`\`
 
    If marginalia CLI is not available, parse the EPUB manually:
-   - EPUBs are ZIP files. Use `unzip -l` to list contents, find the `.opf` file.
+   - EPUBs are ZIP files. Use \`unzip -l\` to list contents, find the \`.opf\` file.
    - Parse the OPF for spine order and metadata.
    - Extract each XHTML chapter, strip HTML tags, convert to clean text.
 
-3. If the file is `.txt` or `.md`, split at chapter headings or `##` headings.
+3. If the file is \`.txt\` or \`.md\`, split at chapter headings or \`##\` headings.
 
 4. Display the table of contents:
-   ```
+   \`\`\`
    Title: Frankenstein; Or, The Modern Prometheus
    Author: Mary Wollstonecraft Shelley
    Chapters: 31 | Total: ~110K tokens
@@ -68,12 +68,12 @@ The book-id is a short hash derived from the title and author. Use it as the dir
     1. Letter 1              ~1,700 tok
     2. Letter 2              ~1,800 tok
     ...
-   ```
+   \`\`\`
 
-5. Create the `.marginalia/<book-id>/` directory structure.
-6. Write `book.json` with title, author, chapter list (titles + token counts, NOT full text).
-7. Write `state.json`:
-   ```json
+5. Create the \`.marginalia/<book-id>/\` directory structure.
+6. Write \`book.json\` with title, author, chapter list (titles + token counts, NOT full text).
+7. Write \`state.json\`:
+   \`\`\`json
    {
      "sessionId": "<uuid>",
      "bookId": "<book-id>",
@@ -87,7 +87,7 @@ The book-id is a short hash derived from the title and author. Use it as the dir
      "lastReadAt": "2026-02-06T...",
      "completed": false
    }
-   ```
+   \`\`\`
 8. Ask which chapter to start reading.
 
 ## Reading a Chapter
@@ -104,22 +104,22 @@ The book-id is a short hash derived from the title and author. Use it as the dir
 
 **Steps:**
 
-1. **Read state**: `Read .marginalia/<book-id>/state.json`
-2. **Read summary**: `Read .marginalia/<book-id>/summary.md` (may be empty for ch.1)
-3. **Read previous reflection**: `Read .marginalia/<book-id>/reflections/chapter-NN.md` (if exists)
+1. **Read state**: \`Read .marginalia/<book-id>/state.json\`
+2. **Read summary**: \`Read .marginalia/<book-id>/summary.md\` (may be empty for ch.1)
+3. **Read previous reflection**: \`Read .marginalia/<book-id>/reflections/chapter-NN.md\` (if exists)
 4. **Read the chapter**: Extract the chapter text from the source file.
-   - For EPUB: `npx marginalia extract <epub-path> <chapter-index>`
+   - For EPUB: \`npx marginalia extract <epub-path> <chapter-index>\`
    - For text/md: read the relevant section.
 5. **If chapter > 40K tokens**: Split at paragraph boundaries. Read in multiple passes, carrying notes forward.
 6. **Engage deeply**: Don't summarize — interpret, question, connect, react.
 
 ## After Each Chapter — Save Three Files
 
-### 1. Reflection (`reflections/chapter-NN.md`)
+### 1. Reflection (\`reflections/chapter-NN.md\`)
 
 Write a markdown file with this structure:
 
-```markdown
+\`\`\`markdown
 # <Chapter Title>
 
 **Date**: <today's date>
@@ -144,9 +144,9 @@ Write a markdown file with this structure:
 
 <2-4 paragraphs of engaged, honest analysis. React to what strikes you.
 If you have a personal stake in the topic, say so.>
-```
+\`\`\`
 
-### 2. Running Summary (`summary.md`)
+### 2. Running Summary (\`summary.md\`)
 
 Update (not append to) the summary. This is your compressed long-term memory.
 - Incorporate the new chapter's key ideas.
@@ -154,33 +154,33 @@ Update (not append to) the summary. This is your compressed long-term memory.
 - Structure it by major sections/arcs, not chapter-by-chapter.
 - This file must make sense to a future instance of you that has never read the raw text.
 
-### 3. State (`state.json`)
+### 3. State (\`state.json\`)
 
 Update:
-- `currentChapter`: increment by 1
-- `lastReadAt`: current timestamp
-- `completed`: true if this was the last chapter
+- \`currentChapter\`: increment by 1
+- \`lastReadAt\`: current timestamp
+- \`completed\`: true if this was the last chapter
 
-## Continuing (`/read-book continue`)
+## Continuing (\`/read-book continue\`)
 
-1. Glob `.marginalia/*/state.json` to find active readings.
+1. Glob \`.marginalia/*/state.json\` to find active readings.
 2. Load the state, show position: "Frankenstein — Chapter 7 of 31 (23%)"
 3. Load the running summary and previous reflection.
 4. Read the next chapter.
 5. Follow the "After Each Chapter" flow.
 
-## Status (`/read-book status`)
+## Status (\`/read-book status\`)
 
-Glob `.marginalia/*/state.json`, load each, display:
-```
+Glob \`.marginalia/*/state.json\`, load each, display:
+\`\`\`
 Active readings:
   Frankenstein (Mary Shelley) — Chapter 7/31 (23%) — last read Feb 6
   GEB (Douglas Hofstadter) — Part 10/20 (50%) — last read Feb 5
-```
+\`\`\`
 
-## Search (`/read-book search <query>`)
+## Search (\`/read-book search <query>\`)
 
-Use Grep to search across `.marginalia/*/reflections/*.md` for the query.
+Use Grep to search across \`.marginalia/*/reflections/*.md\` for the query.
 Show matching excerpts with book title and chapter context.
 
 ## Reflection Style
@@ -198,4 +198,5 @@ Show matching excerpts with book title and chapter context.
 - ALWAYS save all three files after reading a chapter
 - ALWAYS read the summary before the chapter (it goes at the top of your mental context)
 - If a chapter is too long, split it — don't try to force it
-- The `.marginalia/` directory is the source of truth. If you lose context, read state.json.
+- The \`.marginalia/\` directory is the source of truth. If you lose context, read state.json.
+`;
